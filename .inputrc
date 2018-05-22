@@ -1,0 +1,13 @@
+$include /etc/inputrc
+
+# enhanced history
+"\e[A": history-search-backward
+"\e[B": history-search-forward
+
+set bell-style visible
+set show-all-if-ambiguous On
+Ctrl-`: menu-complete
+
+set input-meta on
+set output-meta on
+
