@@ -281,6 +281,9 @@ let xterm16_brightness = 'high'
 let xterm16bg_Normal = 'none'
 " colo xterm16
 
+" set copy buffer
+set viminfo='1000
+
 " colo ibmedit
 let g:opamshare = substitute(system('opam config var share'),'\n$','','''')
 execute "set rtp+=" . g:opamshare . "/merlin/vim"
