@@ -139,9 +139,10 @@ imap <C-d> <esc>yypi
 nmap <C-l> :%s/\<<c-r>=expand("<cword>")<cr>\>/
 
 " F2 - Ð±Ñ‹ÑÑ‚Ñ€Ð¾Ðµ ÑÐ¾Ñ…Ñ€Ð°Ð½ÐµÐ½Ð¸Ðµ
-nmap <F2> :w<cr>
-vmap <F2> <esc>:w<cr>i
-imap <F2> <esc>:w<cr>i
+"nmap <F2> :w<cr>
+"vmap <F2> <esc>:w<cr>i
+"imap <F2> <esc>:w<cr>i
+set pastetoggle=<F2>
 
 " F3 - Ð¿Ñ€Ð¾ÑÐ¼Ð¾Ñ‚Ñ€ Ð¾ÑˆÐ¸Ð±Ð¾Ðº
 nmap <F3> :copen<cr>
@@ -258,6 +259,9 @@ set mps-=[:]
 
 au BufReadPost *.pdf silent %!pdftotext -nopgbrk "%" - |fmt -csw78
 au BufReadPost *.doc silent %!antiword "%"
+
+au BufWinLeave * mkview
+au BufWinEnter * silent loadview
 
 " For 'view' mode
 if &readonly == 1
