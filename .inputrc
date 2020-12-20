@@ -1,13 +1,40 @@
 $include /etc/inputrc
 
 # enhanced history
+# Up/Down
 "\e[A": history-search-backward
 "\e[B": history-search-forward
+# Alt-k/j
+"\ek": history-search-backward
+"\ej": history-search-forward
 
 set bell-style visible
 set show-all-if-ambiguous On
-Ctrl-`: menu-complete
+#set completion-ignore-case on
+#set show-all-if-unmodified on
+
+# Shift-Tab or Ctrl-O
+"\e[Z": menu-complete
+"\C-o": menu-complete
+
+# Alt-o
+# Insert-Option
+"\eo": "\C-p\C-a\ef "
 
 set input-meta on
 set output-meta on
 
+# Enable coloring for tab completions with bash >= 4.3
+set colored-stats on
+
+$if Bash
+  # do history expansion when space entered
+  Space: magic-space
+
+  # Shift-Left/Right - jump as shell tokenizes the line
+  "\e[1;2C": shell-forward-word
+  "\e[1;2D": shell-backward-word
+$endif
+
+# https://cirw.in/blog/bracketed-paste
+set enable-bracketed-paste on
