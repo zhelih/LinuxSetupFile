@@ -1,22 +1,23 @@
 #!/bin/bash
 
+# possible to use SVN instead of git to checkout
+
 vim_plugins="
-git@github.com:sbdchd/neoformat.git
-git@github.com:mileszs/ack.vim.git
-https://github.com/sbdchd/neoformat
-git@github.com:ervandew/supertab.git
+https://github.com/sbdchd/neoformat.git
+https://github.com/mileszs/ack.vim.git
+https://github.com/ervandew/supertab.git
 https://github.com/scrooloose/syntastic.git
 https://github.com/ConradIrwin/vim-bracketed-paste
 https://github.com/easymotion/vim-easymotion
-git://github.com/tpope/vim-fugitive.git
-git://github.com/airblade/vim-gitgutter.git
+https://github.com/tpope/vim-fugitive.git
+https://github.com/airblade/vim-gitgutter.git
 https://github.com/ocaml/vim-ocaml.git
 https://sanctum.geek.nz/code/vim-redact-pass.git
-git://github.com/tpope/vim-repeat.git
-git://github.com/tpope/vim-speeddating.git
-git://github.com/tpope/vim-surround.git
+https://github.com/tpope/vim-repeat.git
+https://github.com/tpope/vim-speeddating.git
+https://github.com/tpope/vim-surround.git
 https://github.com/milkypostman/vim-togglelist.git
-git@github.com:tpope/vim-unimpaired.git
+https://github.com/tpope/vim-unimpaired.git
 "
 
 install="
@@ -37,8 +38,8 @@ for i in $install; do
 done
 
 # install plugins
-mkdir -p ~/.vim
-mkdir -p ~/.vim/bundle
+mkdir -p ~/.vim ~/.vim/autoload ~/.vim/bundle && \
+curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
 cd ~/.vim/bundle
 for plugin in $vim_plugins; do
   git clone $plugin
