@@ -36,18 +36,6 @@ for i in $install; do
   done
 done
 
-exit
-
-while true; do
-  read -p "Do you wish to install .vimrc? (y/n)" yn
-  case $yn in
-    [Yy]* ) cp .vimrc ~/; break;;
-    [Nn]* ) ;;
-    * ) echo "Please answer y or n.";;
-  esac
-done
-
-
 # install plugins
 mkdir -p ~/.vim
 mkdir -p ~/.vim/bundle
