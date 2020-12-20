@@ -296,6 +296,10 @@ set history=1000
 
 " set cursorline
 
+" open file at previous pos using marks
+au BufWinLeave * mkview
+au BufWinEnter * silent loadview
+
 "-------------------------
 " Горячие клавишы
 "-------------------------
