@@ -522,6 +522,30 @@ endif
    map Ю >
 
 let g:es_library_path="/home/user/.vim/bundle/vim-elasticsearch/es_keyword.txt"
+let g:neoformat_ocaml_ocamlformat = {
+            \ 'exe': 'ocamlformat',
+            \ 'no_append': 1,
+            \ 'stdin': 1,
+            \ 'args': ['--disable-outside-detected-project', '--name', '"%:p"', '-']
+            \ }
+
+let g:neoformat_enabled_ocaml = ['ocamlformat']
+let g:neoformat_enabled_dune = []
+
+" custom setting for clangformat
+let g:neoformat_cpp_clangformat = {
+    \ 'exe': 'clang-format',
+    \ 'args': ['--style="{IndentWidth: 4}"']
+\}
+let g:neoformat_enabled_cpp = ['clangformat']
+let g:neoformat_enabled_c = ['clangformat']
+
+" https://vim.fandom.com/wiki/Copy,_cut_and_paste
+" marks remembered for last 100 files
+" each register holds at most 4,000 lines
+" limits register size to 200KB
+" h disables search hghlighting
+set viminfo='100,<4000,s200,h
 
 " To install Pathogen for VIM
 " see https://github.com/tpope/vim-pathogen
