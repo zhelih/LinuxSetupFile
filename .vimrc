@@ -1,7 +1,177 @@
-"ee http://www.ocaml.info/vimrc
+" courtesy of ygrek
+" modified by zhelih
+"
+" see http://www.ocaml.info/vimrc
 
 :set fileencodings=utf-8,cp1251
 :set background=dark
+
+" xterm16
+let xterm16_colormap = 'allblue'
+let xterm16_brightness = 'high'
+let xterm16bg_Normal = 'none'
+" colo xterm16
+" colo ibmedit
+
+let maplocalleader="\<space>"
+
+call pathogen#infect()
+
+" default C-C is a big mess up, C-S doesn't workd because terminal but who cares
+let g:ftplugin_sql_omni_key       = '<C-S>'
+let g:SuperTabDefaultCompletionType = "context"
+
+" gx to open URLs in Firefox
+let g:netrw_browsex_viewer= "firefox"
+
+let ignore = '\v\~$'
+let ignore .= '|\.(a|so|o|exe|dll|bak|orig|swp|cm.+|annot|byte|native)$'
+let ignore .= '|(^|[/\\])(_o?build|elm-stuff|\.(hg|git|bzr))($|[/\\])'
+
+"FuzzyFinder should ignore all files in .gitignore
+if filereadable(".gitignore")
+  for line in readfile(".gitignore")
+    let line = substitute(line, '\.', '\\.', 'g')
+    let line = substitute(line, '\~', '\\~', 'g')
+    let line = substitute(line, '\*', '.*', 'g')
+    let line = substitute(line, ' ', '', 'g')
+    if strlen(line) > 0
+      let ignore .= '|^' . line
+    endif
+  endfor
+endif
+
+function! FzyCommand(input, choice_command, vim_command)
+  try
+    let output = system(a:choice_command,a:input)
+  catch /Vim:Interrupt/
+    " Swallow errors from ^C, allow redraw! below
+  endtry
+  let output = substitute(output, '\n\+$', '', '')
+  redraw!
+  if v:shell_error == 0 && !empty(output)
+    exec a:vim_command . escape(output,'/\')
+  endif
+endfunction
+
+nnoremap <LocalLeader>e :call FzyCommand("", "rg . -L -l -g '' < /dev/null 2> /dev/null \| fzy", ":e ")<cr>
+nnoremap <LocalLeader>i :call FzyCommand(join(getline(1, '$'), "\n"), "fzy", "/\\V")<cr>
+
+" let g:syntastic_auto_loc_list = 1
+" let g:syntastic_check_on_open = 1
+" let g:syntastic_check_on_wq = 0
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_mode_map = { "mode": "passive", "active_filetypes": ["ocaml","rust","sh"] }
+let g:syntastic_ocaml_checkers = ['merlin']
+let g:syntastic_rust_checkers = ['rustc']
+let g:syntastic_sh_checkers = ['shellcheck']
+let g:elm_syntastic_show_warnings = 1
+
+" Enable the list of buffers
+let g:airline#extensions#tabline#enabled = 1
+let g:airline_theme = 'minimalist'
+
+" let g:indentLine_setConceal = 0
+" let g:indentLine_concealcursor = 'vc'
+
+set modelines=0
+set nomodeline
+
+set noshowmode
+
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+
+let g:racer_cmd = "/home/user/.cargo/bin/racer"
+
+au FileType rust nmap gd <Plug>(rust-def)
+au FileType rust nmap <leader>gd <Plug>(rust-doc)
+
+if executable('rls')
+    au User lsp_setup call lsp#register_server({
+        \ 'name': 'rls',
+        \ 'cmd': {server_info->['rustup', 'run', 'nightly', 'rls']},
+        \ 'whitelist': ['rust'],
+        \ })
+endif
+
+if 0 == 1
+  call dein#add('w0rp/ale')
+
+  let g:ale_rust_rls_toolchain = '<version in Makefile>'
+  let g:ale_completion_enabled = 1
+  let g:ale_set_balloons = 1
+
+  let g:ale_linters = {
+        \ 'rust': ['rls'],
+        \ 'ocaml': ['merlin'],
+        \}
+
+  autocmd FileType rust  nnoremap <buffer> <silent> <LocalLeader>t :ALEHover<CR>
+  autocmd FileType rust  nnoremap <buffer> <silent> <LocalLeader>d :ALEGoToDefinition<CR>
+
+  call dein#add('sbdchd/neoformat')
+endif
+
+" https://elliotekj.com/2016/11/22/setup-ctrlp-to-use-ripgrep-in-vim/
+set wildignore+=*/.git/*,*.swp,*/_build/*
+
+if executable('rg')
+  " https://github.com/BurntSushi/ripgrep/issues/425
+  set grepprg=rg\ --vimgrep\ --no-heading\ --smart-case
+  set grepformat=%f:%l:%c:%m,%f:%l:%m
+  let g:ackprg = &grepprg
+  "let g:ctrlp_user_command = 'rg %s --files --color=never --glob ""'
+  "let g:ctrlp_use_caching = 0
+  "let g:ctrlp_working_path_mode = 'ra'
+  "let g:ctrlp_switch_buffer = 'et'
+elseif executable('ag')
+  set grepprg=ag\ --vimgrep
+  let g:ackprg = &grepprg
+  "let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
+  "let g:ctrlp_use_caching = 0
+endif
+
+cnoreabbrev rg Ack
+cnoreabbrev Rg Ack
+cnoreabbrev ag Ack
+cnoreabbrev Ag Ack
+
+let g:EasyMotion_do_mapping = 0 " Disable default mappings
+let g:EasyMotion_smartcase = 1 " Turn on case insensitive feature
+
+" move forward to {char}
+map  f <Plug>(easymotion-bd-f)
+nmap f <Plug>(easymotion-overwin-f)
+
+" move to {char}
+"map  s <Plug>(easymotion-bd-f2)
+"nmap s <Plug>(easymotion-overwin-f2)
+
+nmap <LocalLeader>w <Plug>(easymotion-bd-w)
+
+" Move to line
+"map <LocalLeader>l <Plug>(easymotion-bd-jk)
+"nmap <LocalLeader>l <Plug>(easymotion-overwin-line)
+
+" JK motions: Line motions
+map <LocalLeader>j <Plug>(easymotion-j)
+map <LocalLeader>k <Plug>(easymotion-k)
+
+map  <LocalLeader>f <Plug>(easymotion-sn)
+omap <LocalLeader>f <Plug>(easymotion-tn)
+
+cmap j <Down>
+cmap k <Up>
+
+" let g:gitgutter_sign_column_always = 1
+
+" to update gitgutter signs faster
+" set updatetime=500
+
+" gitgutter show on save only
+autocmd BufWritePost * GitGutter
 
 " File-type highlighting and configuration.
 " Run :filetype (without args) to see what you may have
@@ -11,71 +181,84 @@ filetype on
 filetype plugin on
 " filetype indent on
 
+" set omnifunc=syntaxcomplete#Complete
+
 " force 256 colors in console
-"set t_Co=256
+set t_Co=256
+" do not clear terminal
+" set t_ti=
+" set t_te=
+
+" Enable screen swapping {{{3
+" which seems missing in the linux terminfo entry
+" help xterm-screens for more info
+"if &term ==? 'linux'
+"    set t_ti=[?1049h
+"    set t_te=[?1049l
+"endif
 
 " Extended matching with %
 runtime macros/matchit.vim
 
 "-------------------------
-" Ð‘Ð°Ð·Ð¾Ð²Ñ‹Ðµ Ð½Ð°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸
+" Базовые настройки
 "-------------------------
 
-" Ð’ÐºÐ»ÑŽÑ‡Ð°ÐµÐ¼ Ð½ÐµÑÐ¾Ð²Ð¼ÐµÑÑ‚Ð¸Ð¼Ð¾ÑÑ‚ÑŒ Ð½Ð°ÑÑ‚Ñ€Ð¾ÐµÐº Ñ Vi (Ð¸Ð±Ð¾ Vi Ð½Ð°Ð¼ Ð¸ Ð½Ðµ Ð¿Ð¾Ð½Ð°Ð´Ð¾Ð±Ð¸Ñ‚ÑÑ).
+" Включаем несовместимость настроек с Vi (ибо Vi нам и не понадобится).
 set nocompatible
 
-" ÐŸÐ¾ÐºÐ°Ð·Ñ‹Ð²Ð°Ñ‚ÑŒ Ð¿Ð¾Ð»Ð¾Ð¶ÐµÐ½Ð¸Ðµ ÐºÑƒÑ€ÑÐ¾Ñ€Ð° Ð²ÑÑ‘ Ð²Ñ€ÐµÐ¼Ñ.
-set ruler  
+" Показывать положение курсора всё время.
+ set ruler
 
-" ÐŸÐ¾ÐºÐ°Ð·Ñ‹Ð²Ð°Ñ‚ÑŒ Ð½ÐµÐ·Ð°Ð²ÐµÑ€ÑˆÑ‘Ð½Ð½Ñ‹Ðµ ÐºÐ¾Ð¼Ð°Ð½Ð´Ñ‹ Ð² ÑÑ‚Ð°Ñ‚ÑƒÑÐ±Ð°Ñ€Ðµ
-set showcmd  
+" Показывать незавершённые команды в статусбаре
+ set showcmd
 
-" Ð’ÐºÐ»ÑŽÑ‡Ð°ÐµÐ¼ Ð½ÑƒÐ¼ÐµÑ€Ð°Ñ†Ð¸ÑŽ ÑÑ‚Ñ€Ð¾Ðº
+" line numbers
 set nu
 
-" Ð¤Ð¾Ð»Ð´Ð¸Ð½Ð³ Ð¿Ð¾ Ð¾Ñ‚ÑÑƒÐ¿Ð°Ð¼
+" Фолдинг по отсупам
 "set foldmethod=indent
 
-" ÐŸÐ¾Ð¸ÑÐº Ð¿Ð¾ Ð½Ð°Ð±Ð¾Ñ€Ñƒ Ñ‚ÐµÐºÑÑ‚Ð° (Ð¾Ñ‡ÐµÐ½ÑŒ Ð¿Ð¾Ð»ÐµÐ·Ð½Ð°Ñ Ñ„ÑƒÐ½ÐºÑ†Ð¸Ñ)
+" Поиск по набору текста (очень полезная функция)
 set incsearch
 
-" ÐžÑ‚ÐºÐ»ÑŽÑ‡Ð°ÐµÐ¼ Ð¿Ð¾Ð´ÑÑ‚Ð²ÐµÑ‚ÐºÑƒ Ð½Ð°Ð¹Ð´ÐµÐ½Ð½Ñ‹Ñ… Ð²Ð°Ñ€Ð¸Ð°Ð½Ñ‚Ð¾Ð², Ð¸ Ñ‚Ð°Ðº Ð²ÑÑ‘ Ð²Ð¸Ð´Ð½Ð¾.
+" Отключаем подстветку найденных вариантов, и так всё видно.
 set nohlsearch
 
-" Ð¢ÐµÐ¿ÐµÑ€ÑŒ Ð½ÐµÑ‚ Ð½ÐµÐ¾Ð±Ñ…Ð¾Ð´Ð¸Ð¼Ð¾ÑÑ‚Ð¸ Ð¿ÐµÑ€ÐµÐ´Ð²Ð¸Ð³Ð°Ñ‚ÑŒ ÐºÑƒÑ€ÑÐ¾Ñ€ Ðº ÐºÑ€Ð°ÑŽ ÑÐºÑ€Ð°Ð½Ð°, Ñ‡Ñ‚Ð¾Ð±Ñ‹ Ð¿Ð¾Ð´Ð½ÑÑ‚ÑŒÑÑ Ð² Ñ€ÐµÐ¶Ð¸Ð¼Ðµ Ñ€ÐµÐ´Ð°ÐºÑ‚Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ñ
+" Теперь нет необходимости передвигать курсор к краю экрана, чтобы подняться в режиме редактирования
 "set scrolljump=7
 
-" Ð¢ÐµÐ¿ÐµÑ€ÑŒ Ð½ÐµÑ‚ Ð½ÐµÐ¾Ð±Ñ…Ð¾Ð´Ð¸Ð¼Ð¾ÑÑ‚Ð¸ Ð¿ÐµÑ€ÐµÐ´Ð²Ð¸Ð³Ð°Ñ‚ÑŒ ÐºÑƒÑ€ÑÐ¾Ñ€ Ðº ÐºÑ€Ð°ÑŽ ÑÐºÑ€Ð°Ð½Ð°, Ñ‡Ñ‚Ð¾Ð±Ñ‹ Ð¾Ð¿ÑƒÑÑ‚Ð¸Ñ‚ÑŒÑÑ Ð² Ñ€ÐµÐ¶Ð¸Ð¼Ðµ Ñ€ÐµÐ´Ð°ÐºÑ‚Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ñ
+" Теперь нет необходимости передвигать курсор к краю экрана, чтобы опуститься в режиме редактирования
 set scrolloff=3
 
 " set textwidth=100
 
-" Ð’Ñ‹ÐºÐ»ÑŽÑ‡Ð°ÐµÐ¼ Ð½Ð°Ð´Ð¾ÐµÐ´Ð»Ð¸Ð²Ñ‹Ð¹ "Ð·Ð²Ð¾Ð½Ð¾Ðº"
+" Выключаем надоедливый "звонок"
 set visualbell
-set t_vb=   
+set t_vb=
 
-" ÐŸÐ¾Ð´Ð´ÐµÑ€Ð¶ÐºÐ° Ð¼Ñ‹ÑˆÐ¸
+" Поддержка мыши
 set mouse=a
 set mousemodel=popup
 
-" ÐšÐ¾Ð´Ð¸Ñ€Ð¾Ð²ÐºÐ° Ñ‚ÐµÐºÑÑ‚Ð° Ð¿Ð¾ ÑƒÐ¼Ð¾Ð»Ñ‡Ð°Ð½Ð¸ÑŽ
+" Кодировка текста по умолчанию
 set termencoding=utf-8
 
-" ÐÐµ Ð²Ñ‹Ð³Ñ€ÑƒÐ¶Ð°Ñ‚ÑŒ Ð±ÑƒÑ„ÐµÑ€, ÐºÐ¾Ð³Ð´Ð° Ð¿ÐµÑ€ÐµÐºÐ»ÑŽÑ‡Ð°ÐµÐ¼ÑÑ Ð½Ð° Ð´Ñ€ÑƒÐ³Ð¾Ð¹
-" Ð­Ñ‚Ð¾ Ð¿Ð¾Ð·Ð²Ð¾Ð»ÑÐµÑ‚ Ñ€ÐµÐ´Ð°ÐºÑ‚Ð¸Ñ€Ð¾Ð²Ð°Ñ‚ÑŒ Ð½ÐµÑÐºÐ¾Ð»ÑŒÐºÐ¾ Ñ„Ð°Ð¹Ð»Ð¾Ð² Ð² Ð¾Ð´Ð¸Ð½ Ð¸ Ñ‚Ð¾Ñ‚ Ð¶Ðµ Ð¼Ð¾Ð¼ÐµÐ½Ñ‚ Ð±ÐµÐ· Ð½ÐµÐ¾Ð±Ñ…Ð¾Ð´Ð¸Ð¼Ð¾ÑÑ‚Ð¸ ÑÐ¾Ñ…Ñ€Ð°Ð½ÐµÐ½Ð¸Ñ ÐºÐ°Ð¶Ð´Ñ‹Ð¹ Ñ€Ð°Ð·
-" ÐºÐ¾Ð³Ð´Ð° Ð¿ÐµÑ€ÐµÐºÐ»ÑŽÑ‡Ð°ÐµÑˆÑŒÑÑ Ð¼ÐµÐ¶Ð´Ñƒ Ð½Ð¸Ð¼Ð¸
+" Не выгружать буфер, когда переключаемся на другой
+" Это позволяет редактировать несколько файлов в один и тот же момент без необходимости сохранения каждый раз
+" когда переключаешься между ними
 set hidden
 
-" Ð¡ÐºÑ€Ñ‹Ñ‚ÑŒ Ð¿Ð°Ð½ÐµÐ»ÑŒ Ð² gui Ð²ÐµÑ€ÑÐ¸Ð¸ Ð¸Ð±Ð¾ Ð¾Ð½Ð° Ð½Ðµ Ð½ÑƒÐ¶Ð½Ð°
+" Скрыть панель в gui версии ибо она не нужна
 set guioptions-=T
 
-" Ð¡Ð´ÐµÐ»Ð°Ñ‚ÑŒ ÑÑ‚Ñ€Ð¾ÐºÑƒ ÐºÐ¾Ð¼Ð°Ð½Ð´ Ð²Ñ‹ÑÐ¾Ñ‚Ð¾Ð¹ Ð² Ð¾Ð´Ð½Ñƒ ÑÑ‚Ñ€Ð¾ÐºÑƒ
+" Сделать строку команд высотой в одну строку
 "set ch=1
 
-" Ð¡ÐºÑ€Ñ‹Ð²Ð°Ñ‚ÑŒ ÑƒÐºÐ°Ð·Ð°Ñ‚ÐµÐ»ÑŒ Ð¼Ñ‹ÑˆÐ¸, ÐºÐ¾Ð³Ð´Ð° Ð¿ÐµÑ‡Ð°Ñ‚Ð°ÐµÐ¼
+" Скрывать указатель мыши, когда печатаем
 set mousehide
 
-" Ð’ÐºÐ»ÑŽÑ‡Ð¸Ñ‚ÑŒ Ð°Ð²Ñ‚Ð¾Ð¾Ñ‚ÑÑ‚ÑƒÐ¿Ñ‹
+" Включить автоотступы
 set autoindent
 
 " Automatically write buffer before special actions
@@ -87,135 +270,107 @@ set autoread
 " allow to use backspace instead of "x"
 set backspace=indent,eol,start whichwrap+=<,>,[,]
 
-" ÐŸÑ€ÐµÐ¾Ð±Ñ€Ð°Ð·Ð¾Ð²Ð°Ð½Ð¸Ðµ Ð¢Ð°Ð±Ð° Ð² Ð¿Ñ€Ð¾Ð±ÐµÐ»Ñ‹
+" Преобразование Таба в пробелы
 set expandtab
 
-" Ð Ð°Ð·Ð¼ÐµÑ€ Ñ‚Ð°Ð±ÑƒÐ»ÑÑ†Ð¸Ð¸ Ð¿Ð¾ ÑƒÐ¼Ð¾Ð»Ñ‡Ð°Ð½Ð¸ÑŽ
+" Размер табуляции по умолчанию
 set shiftwidth=2
 set softtabstop=2
 set tabstop=2
 
-" Ð¤Ð¾Ñ€Ð¼Ð°Ñ‚ ÑÑ‚Ñ€Ð¾ÐºÐ¸ ÑÐ¾ÑÑ‚Ð¾ÑÐ½Ð¸Ñ
-"set statusline=%<%f%h%m%r\ %b\ %{&encoding}\ 0x\ \ %l,%c%V\ %P 
+" Формат строки состояния
+"set statusline=%<%f%h%m%r\ %b\ %{&encoding}\ 0x\ \ %l,%c%V\ %P
 "set laststatus=2
 
-" Ð’ÐºÐ»ÑŽÑ‡Ð°ÐµÐ¼ "ÑƒÐ¼Ð½Ñ‹Ðµ" Ð¾Ñ‚ÑÐ¿ÑƒÐ¿Ñ‹ ( Ð½Ð°Ð¿Ñ€Ð¸Ð¼ÐµÑ€, Ð°Ð²Ñ‚Ð¾Ð¾Ñ‚ÑÑ‚ÑƒÐ¿ Ð¿Ð¾ÑÐ»Ðµ {)
+" Включаем "умные" отспупы ( например, автоотступ после {)
 set smartindent
 
 " Fix <Enter> for comment
 set fo+=cr
 
-" ÐžÐ¿Ñ†Ð¸Ð¸ ÑÐµÑÑÑÐ¸Ð¹
+" Опции сесссий
 set sessionoptions=curdir,buffers,tabpages
 
 " Expand history
 set history=1000
 
+" set cursorline
+
 "-------------------------
-" Ð“Ð¾Ñ€ÑÑ‡Ð¸Ðµ ÐºÐ»Ð°Ð²Ð¸ÑˆÑ‹
+" Горячие клавишы
 "-------------------------
 
-" ÐŸÑ€Ð¾Ð±ÐµÐ» Ð² Ð½Ð¾Ñ€Ð¼Ð°Ð»ÑŒÐ½Ð¾Ð¼ Ñ€ÐµÐ¶Ð¸Ð¼Ðµ Ð¿ÐµÑ€ÐµÐ»Ð¸ÑÑ‚Ñ‹Ð²Ð°ÐµÑ‚ ÑÑ‚Ñ€Ð°Ð½Ð¸Ñ†Ñ‹
-nmap <Space> <PageDown>
+" Пробел в нормальном режиме перелистывает страницы
+" nmap <Space> <PageDown>
 
-" CTRL-F Ð´Ð»Ñ omni completion
-imap <C-F> <C-X><C-O>
-
-" C-c and C-v - Copy/Paste Ð² "Ð³Ð»Ð¾Ð±Ð°Ð»ÑŒÐ½Ñ‹Ð¹ ÐºÐ»Ð¸Ð¿Ð±Ð¾Ñ€Ð´"
+" C-c and C-v - Copy/Paste в "глобальный клипборд"
 " vmap <C-C> "+yi
 " imap <C-V> <esc>"+gPi
 
-" Ð—Ð°ÑÑ‚Ð°Ð²Ð»ÑÐµÐ¼ shift-insert Ñ€Ð°Ð±Ð¾Ñ‚Ð°Ñ‚ÑŒ ÐºÐ°Ðº Ð² Xterm
+" Заставляем shift-insert работать как в Xterm
 map <S-Insert> <MiddleMouse>
 
-" C-y - ÑƒÐ´Ð°Ð»ÐµÐ½Ð¸Ðµ Ñ‚ÐµÐºÑƒÑ‰ÐµÐ¹ ÑÑ‚Ñ€Ð¾ÐºÐ¸
-nmap <C-y> dd
-imap <C-y> <esc>ddi
+" Поиск и замена слова под курсором
+nmap <C-K> :%s/\<<c-r>=expand("<cword>")<cr>\>/
+"nmap <C-F> :FufFile **/<cr>
+nmap <C-L> :FufLine<cr>
+"nmap <C-B> :FufBuffer<cr>
 
-" C-d - Ð´ÑƒÐ±Ð»Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ðµ Ñ‚ÐµÐºÑƒÑ‰ÐµÐ¹ ÑÑ‚Ñ€Ð¾ÐºÐ¸
-imap <C-d> <esc>yypi
+" I found this map works for Ctrl-Space : 
+"nnoremap <C-@> i
+inoremap <C-@> <Esc>
 
-" ÐŸÐ¾Ð¸ÑÐº Ð¸ Ð·Ð°Ð¼ÐµÐ½Ð° ÑÐ»Ð¾Ð²Ð° Ð¿Ð¾Ð´ ÐºÑƒÑ€ÑÐ¾Ñ€Ð¾Ð¼
-nmap <C-l> :%s/\<<c-r>=expand("<cword>")<cr>\>/
+nnoremap <LocalLeader>a :Ack<CR>
+noremap <LocalLeader>u :w<CR>
 
-" F2 - Ð±Ñ‹ÑÑ‚Ñ€Ð¾Ðµ ÑÐ¾Ñ…Ñ€Ð°Ð½ÐµÐ½Ð¸Ðµ
-"nmap <F2> :w<cr>
-"vmap <F2> <esc>:w<cr>i
-"imap <F2> <esc>:w<cr>i
-set pastetoggle=<F2>
+let g:toggle_list_no_mappings = 1
+nmap <script> <silent> <F3> :call ToggleQuickfixList()<CR>
+nmap <script> <silent> <LocalLeader>q :call ToggleQuickfixList()<CR>
+nmap <script> <silent> <LocalLeader>l :call ToggleLocationList()<CR>
 
-" F3 - Ð¿Ñ€Ð¾ÑÐ¼Ð¾Ñ‚Ñ€ Ð¾ÑˆÐ¸Ð±Ð¾Ðº
-nmap <F3> :copen<cr>
-vmap <F3> <esc>:copen<cr>
-imap <F3> <esc>:copen<cr>
+map <LocalLeader>r :set nu!<CR>
 
-" F4 - Ð±Ñ‹ÑÑ‚Ñ€Ñ‹Ð¹ Ð²Ñ‹Ñ…Ð¾Ð´
-map <F4> :q<cr>
-vmap <F4> <esc>:q<cr>
-imap <F4> <esc>:q<cr>
-
-" F5 - Ð¿Ñ€Ð¾ÑÐ¼Ð¾Ñ‚Ñ€ ÑÐ¿Ð¸ÑÐºÐ° Ð±ÑƒÑ„ÐµÑ€Ð¾Ð²
+" F5 - просмотр списка буферов
 nmap <F5> <Esc>:BufExplorer<cr>
 vmap <F5> <esc>:BufExplorer<cr>
 imap <F5> <esc><esc>:BufExplorer<cr>
 
-" F6 - Ð¿Ñ€ÐµÐ´Ñ‹Ð´ÑƒÑ‰Ð¸Ð¹ Ð±ÑƒÑ„ÐµÑ€
-map <F6> :bp<cr>
-vmap <F6> <esc>:bp<cr>i
-imap <F6> <esc>:bp<cr>i
+let HlUnderCursor=1
+autocmd CursorMoved * exe exists("HlUnderCursor")?HlUnderCursor?printf('match IncSearch /\V\<%s\>/', escape(expand('<cword>'), '/\')):'match none':""
+nnoremap <silent> <F8> :exe "let HlUnderCursor=exists(\"HlUnderCursor\")?HlUnderCursor*-1+1:1"<CR>
 
-" F7 - ÑÐ»ÐµÐ´ÑƒÑŽÑ‰Ð¸Ð¹ Ð±ÑƒÑ„ÐµÑ€
-map <F7> :bn<cr>
-vmap <F7> <esc>:bn<cr>i
-imap <F7> <esc>:bn<cr>i
+function MakeAndShowError()
+  make
+"  if &filetype == "ocaml"
+"    cla
+"  else
+"    cr
+"  endif
+endfunction
 
-" F8 - ÑÐ¿Ð¸ÑÐ¾Ðº Ð·Ð°ÐºÐ»Ð°Ð´Ð¾Ðº
-map <F8> :MarksBrowser<cr>
-vmap <F8> <esc>:MarksBrowser<cr>
-imap <F8> <esc>:MarksBrowser<cr>
+" F9 - "make" команда
+map <F9> :call MakeAndShowError()<cr>
+vmap <F9> <esc>:call MakeAndShowError()<cr>i
+imap <F9> <esc>:call MakeAndShowError()<cr>i
+nmap <LocalLeader>m :call MakeAndShowError()<cr>
 
-" F9 - "make" ÐºÐ¾Ð¼Ð°Ð½Ð´Ð°
-map <F9> :make<cr>
-vmap <F9> <esc>:make<cr>i
-imap <F9> <esc>:make<cr>i
-
-" F10 - Ð¿Ð¾ÐºÐ°Ð·Ð°Ñ‚ÑŒ Ð¾ÐºÐ½Ð¾ Project
-map <F10> <Plug>ToggleProject<cr>
-vmap <F10> <esc><Plug>ToggleProject<cr>
-imap <F10> <esc><Plug>ToggleProject<cr>
-
-" F12 - Format a paragraph
-map <F12> gqap
-vmap <F12> <esc>gqap<cr>i
-imap <F12> <esc>gqap<cr>i
-
-" < & > - Ð´ÐµÐ»Ð°ÐµÐ¼ Ð¾Ñ‚ÑÑ‚ÑƒÐ¿Ñ‹ Ð´Ð»Ñ Ð±Ð»Ð¾ÐºÐ¾Ð²
+" < & > - делаем отступы для блоков
 vmap < <gv
 vmap > >gv
 
-" Ð’Ñ‹ÐºÐ»ÑŽÑ‡Ð°ÐµÐ¼ Ð½ÐµÐ½Ð°Ð²Ð¸ÑÑ‚Ð½Ñ‹Ð¹ Ñ€ÐµÐ¶Ð¸Ð¼ Ð·Ð°Ð¼ÐµÐ½Ñ‹
-imap >Ins> <Esc>i
+" Выключаем ненавистный режим замены
+imap <Ins> <Esc>i
 
-" ÐœÐµÐ½ÑŽ Ð²Ñ‹Ð±Ð¾Ñ€Ð° ÐºÐ¾Ð´Ð¸Ñ€Ð¾Ð²ÐºÐ¸ Ñ‚ÐµÐºÑÑ‚Ð° (koi8-r, cp1251, cp866, utf8)
+" Меню выбора кодировки текста (koi8-r, cp1251, cp866, utf8)
 set wildmenu
 set wildmode=list:longest
 
-"set wcm=<Tab> 
-"menu Encoding.koi8-r :e ++enc=koi8-r<CR>
-"menu Encoding.windows-1251 :e ++enc=cp1251<CR>
-"menu Encoding.cp866 :e ++enc=cp866<CR>
-"menu Encoding.utf-8 :e ++enc=utf8 <CR>
-
-" Ð ÐµÐ´ÐºÐ¾ ÐºÐ¾Ð³Ð´Ð° Ð½Ð°Ð´Ð¾ [ Ð±ÐµÐ· Ð¿Ð°Ñ€Ñ‹ =)
+" Редко когда надо [ без пары =)
 " imap [ []<LEFT>
-" ÐÐ½Ð°Ð»Ð¾Ð³Ð¸Ñ‡Ð½Ð¾ Ð¸ Ð´Ð»Ñ {
-imap {<CR> {<CR>}<Esc>O
+" Аналогично и для {
+" imap {<CR> {<CR>}<Esc>O
 
-" Ð¡-q - Ð²Ñ‹Ñ…Ð¾Ð´ Ð¸Ð· Vim 
-map <C-Q> <Esc>:qa<cr>
-
-
-" ÐÐ²Ñ‚Ð¾Ð·Ð°Ð²ÐµÑ€ÑˆÐµÐ½Ð¸Ðµ ÑÐ»Ð¾Ð² Ð¿Ð¾ tab =)
+" Автозавершение слов по tab =)
 function InsertTabWrapper()
      let col = col('.') - 1
      if !col || getline('.')[col - 1] !~ '\k'
@@ -224,104 +379,172 @@ function InsertTabWrapper()
          return "\<c-p>"
      endif
 endfunction
-imap <tab> <c-r>=InsertTabWrapper()<cr>
+"imap <tab> <c-r>=InsertTabWrapper()<cr>
 
-" Ð¡Ð»Ð¾Ð²Ð° Ð¾Ñ‚ÐºÑƒÐ´Ð° Ð±ÑƒÐ´ÐµÐ¼ Ð·Ð°Ð²ÐµÑ€ÑˆÐ°Ñ‚ÑŒ
+" Слова откуда будем завершать
 set complete=""
-" Ð˜Ð· Ñ‚ÐµÐºÑƒÑ‰ÐµÐ³Ð¾ Ð±ÑƒÑ„ÐµÑ€Ð°
+" Из текущего буфера
 set complete+=.
-" Ð˜Ð· ÑÐ»Ð¾Ð²Ð°Ñ€Ñ
+" Из словаря
 set complete+=k
-" Ð˜Ð· Ð´Ñ€ÑƒÐ³Ð¸Ñ… Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚Ñ‹Ñ… Ð±ÑƒÑ„ÐµÑ€Ð¾Ð²
+" Из других открытых буферов
 set complete+=b
-" Ð¸Ð· Ñ‚ÐµÐ³Ð¾Ð² 
+" из тегов
 set complete+=t
 
 au BufRead,BufNewFile *.f            set filetype=forth
 au BufRead,BufNewFile *.F            set filetype=forth
 au BufRead,BufNewFile *.spf          set filetype=forth
-au BufRead,BufNewFile *.md           set filetype=mkd noexpandtab tw=100
-au BufRead,BufNewFile *.wml          set textwidth=100
+au BufRead,BufNewFile *.md           set filetype=mkd tw=140
+au BufRead,BufNewFile *.brtx         set filetype=bracetax tw=140
+au BufRead,BufNewFile *.wml          set textwidth=140
+au BufRead,BufNewFile *.ml4,*.mlp    set filetype=ocaml
+
+" set list listchars=tab:»·,trail:·
 
 " highlight trailing spaces
-au BufNewFile,BufRead * let b:mtrailingws=matchadd('ErrorMsg', '\s\s\+$', -1)
+au BufNewFile,BufRead * let b:mtrailingws=matchadd('ErrorMsg', '\s\+$', -1)
 
-" ÐÐ°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸ Ð´Ð»Ñ SessionMgr
-let g:SessionMgr_AutoManage = 0
-let g:SessionMgr_DefaultName = "mysession"
+" highlight line length limit
+autocmd ColorScheme * highlight OverLength ctermbg=grey ctermfg=white
+autocmd ColorScheme * match OverLength /\%141v/
 
-" ÐÐ°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸ Ð´Ð»Ñ Tlist (Ð¿Ð¾ÐºÐ°Ð·Ð²Ð°Ñ‚ÑŒ Ñ‚Ð¾Ð»ÑŒÐºÐ¾ Ñ‚ÐµÐºÑƒÑ‰Ð¸Ð¹ Ñ„Ð°Ð¹Ð» Ð² Ð¾ÐºÐ½Ðµ Ð½Ð°Ð²Ð¸Ð³Ð°Ñ†Ð¸Ð¸ Ð¿Ð¾  ÐºÐ¾Ð´Ñƒ)
-let g:Tlist_Show_One_File = 1
+let g:opamshare = substitute(system('opam config var share'),'\n$','','''')
+execute "set rtp+=" . g:opamshare . "/merlin/vim"
+
+" :execute "helptags " . g:opamshare . "/merlin/vim/doc"
+
+
+let g:merlin_split_method = 'never'
+
+let g:merlin_textobject_grow   = 'm'
+let g:merlin_textobject_shrink = 'M'
+
+"nnoremap <LocalLeader>d :Locate<cr>
+
+"au BufWinEnter * call matchadd('ErrorMsg', '\%>100v.\+', -1)
 
 set completeopt-=preview
 set completeopt+=longest
-set mps-=[:]
+" set mps-=[:]
 
 au BufReadPost *.pdf silent %!pdftotext -nopgbrk "%" - |fmt -csw78
 au BufReadPost *.doc silent %!antiword "%"
 
-au BufWinLeave * mkview
-au BufWinEnter * silent loadview
-
 " For 'view' mode
 if &readonly == 1
-" ÑƒÐ±Ð¸Ñ€Ð°ÐµÐ¼ Ð½Ð¾Ð¼ÐµÑ€Ð° ÑÑ‚Ñ€Ð¾Ðº
+" убираем номера строк
 set nonumber
-" Ð½Ðµ ÑÐ²Ð¾Ñ€Ð°Ñ‡Ð¸Ð²Ð°Ñ‚ÑŒ Ð±Ð»Ð¾ÐºÐ¸ Ñ‚ÐµÐºÑÑ‚Ð°
+" не сворачивать блоки текста
 set nofoldenable
-" Ð´ÐµÐ»Ð°ÐµÐ¼ Ð¾Ñ‚ÑÑ‚ÑƒÐ¿ ÑÐ»ÐµÐ²Ð° Ð´Ð»Ñ Ð±Ð¾Ð»ÐµÐµ ÑƒÐ´Ð¾Ð±Ð½Ð¾Ð³Ð¾ Ñ‡Ñ‚ÐµÐ½Ð¸Ñ Ñ‚ÐµÐºÑÑ‚Ð°
+" делаем отступ слева для более удобного чтения текста
 " set foldcolumn=10
-" Ð±Ñ‹ÑÑ‚Ñ€Ñ‹Ð¹ Ð²Ñ‹Ñ…Ð¾Ð´
+" быстрый выход
 " nmap <F10> :qa<cr>
-" Ð¿ÐµÑ€ÐµÐ¼Ð¾Ñ‚ÐºÐ° Ð¿Ð¾ ÐŸÑ€Ð¾Ð±ÐµÐ»Ñƒ
+" перемотка по Пробелу
 nmap <Space> <PageDown>
 endif
 
-:set clipboard=unnamed,exclude:cons\\\|linux
+:set clipboard=unnamed,exclude:cons\|linux
 
-" xterm16
-let xterm16_colormap = 'allblue'
-let xterm16_brightness = 'high'
-let xterm16bg_Normal = 'none'
-" colo xterm16
+" http://mikhailian.livejournal.com/2050.html
 
-" set copy buffer
-set viminfo='1000
+   map ё `
+   map й q
+   map ц w
+   map у e
+   map к r
+   map е t
+   map н y
+   map г u
+   map ш i
+   map щ o
+   map з p
+   map х [
+   map ъ ]
 
-" colo ibmedit
-let g:opamshare = substitute(system('opam config var share'),'\n$','','''')
-execute "set rtp+=" . g:opamshare . "/merlin/vim"
+   map ф a
+   map ы s
+   map в d
+   map а f
+   map п g
+   map р h
+   map о j
+   map л k
+   map д l
+   map ж ;
+   map э '
 
+   map я z
+   map ч x
+   map с c
+   map м v
+   map и b
+   map т n
+   map ь m
+   map б ,
+   map ю .
 
-" ## added by OPAM user-setup for vim / base ## 93ee63e278bdfc07d1139a748ed3fff2 ## you can edit, but keep this line
-let s:opam_share_dir = system("opam config var share")
-let s:opam_share_dir = substitute(s:opam_share_dir, '[\r\n]*$', '', '')
+   map Ё ~
+   map Й Q
+   map Ц W
+   map У E
+   map К R
+   map Е T
+   map Н Y
+   map Г U
+   map Ш I
+   map Щ O
+   map З P
+   map Х {
+   map Ъ }
 
-let s:opam_configuration = {}
+   map Ф A
+   map Ы S
+   map В D
+   map А F
+   map П G
+   map Р H
+   map О J
+   map Л K
+   map Д L
+   map Ж :
+   map Э "
 
-function! OpamConfOcpIndent()
-  execute "set rtp^=" . s:opam_share_dir . "/ocp-indent/vim"
-endfunction
-let s:opam_configuration['ocp-indent'] = function('OpamConfOcpIndent')
+   map Я Z
+   map Ч X
+   map С C
+   map М V
+   map И B
+   map Т N
+   map Ь M
+   map Б <
+   map Ю >
 
-function! OpamConfOcpIndex()
-  execute "set rtp+=" . s:opam_share_dir . "/ocp-index/vim"
-endfunction
-let s:opam_configuration['ocp-index'] = function('OpamConfOcpIndex')
+let g:es_library_path="/home/user/.vim/bundle/vim-elasticsearch/es_keyword.txt"
 
-function! OpamConfMerlin()
-  let l:dir = s:opam_share_dir . "/merlin/vim"
-  execute "set rtp+=" . l:dir
-endfunction
-let s:opam_configuration['merlin'] = function('OpamConfMerlin')
-
-let s:opam_packages = ["ocp-indent", "ocp-index", "merlin"]
-let s:opam_check_cmdline = ["opam list --installed --short --safe --color=never"] + s:opam_packages
-let s:opam_available_tools = split(system(join(s:opam_check_cmdline)))
-for tool in s:opam_packages
-  " Respect package order (merlin should be after ocp-index)
-  if count(s:opam_available_tools, tool) > 0
-    call s:opam_configuration[tool]()
-  endif
-endfor
-" ## end of OPAM user-setup addition for vim / base ## keep this line
+" To install Pathogen for VIM
+" see https://github.com/tpope/vim-pathogen
+" mkdir -p ~/.vim/autoload ~/.vim/bundle && \
+" curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
+" Plugins I use:
+" ack.vim
+" neoformat
+" supertab
+" syntastic
+" vim-bracketed-paste
+" vim-easymotion
+" vim-fugitive
+" vim-gitgutter
+" vim-ocaml
+" vim-redact-pass
+" vim-repeat
+" vim-speeddating
+" vim-surround
+" vim-togglelist
+" vim-unimpaired
+" vim-sensible
+"
+" Example to install:
+" cd ~/.vim/bundle && \
+" git clone https://github.com/tpope/vim-sensible.git
