@@ -108,18 +108,3 @@ export PATH=~/bin:$PATH
 # OPAM configuration
 . /home/lykhovyd/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true
 eval `opam config env`
-
-export PATH=/opt/ibm/ILOG/CPLEX_Studio1263/cplex/bin/x86-64_linux:$PATH
-
-#CUDA
-export PATH=/usr/local/cuda-8.0/bin:$PATH
-export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64:$LD_LIBRARY_PATH
-
-# Gurobi
-export GUROBI_HOME=/opt/gurobi702/linux64
-export PATH=$PATH:$GUROBI_HOME/bin
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$GUROBI_HOME/lib
-export GRB_LICENSE_FILE=/opt/gurobi702/gurobi.lic
-
-# Node.js
-export PATH=$PATH:/home/lykhovyd/nodejs/node-v9.5.0-linux-x64/bin
