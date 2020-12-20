@@ -301,7 +301,7 @@ set history=1000
 "-------------------------
 
 " Пробел в нормальном режиме перелистывает страницы
-" nmap <Space> <PageDown>
+nmap <Space> <PageDown>
 
 " C-c and C-v - Copy/Paste в "глобальный клипборд"
 " vmap <C-C> "+yi
@@ -368,7 +368,7 @@ set wildmode=list:longest
 " Редко когда надо [ без пары =)
 " imap [ []<LEFT>
 " Аналогично и для {
-" imap {<CR> {<CR>}<Esc>O
+imap {<CR> {<CR>}<Esc>O
 
 " Автозавершение слов по tab =)
 function InsertTabWrapper()
