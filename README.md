@@ -1,4 +1,4 @@
-# LinuxSetupFile
+# LinuxSetupFiles
 My Linux environment setup files for Bash and Vi.
 
 Note: with Vim version 8 or newer it is possible to use native load system instead of
