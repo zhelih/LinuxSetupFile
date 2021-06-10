@@ -162,9 +162,6 @@ map <LocalLeader>k <Plug>(easymotion-k)
 map  <LocalLeader>f <Plug>(easymotion-sn)
 omap <LocalLeader>f <Plug>(easymotion-tn)
 
-cmap j <Down>
-cmap k <Up>
-
 " let g:gitgutter_sign_column_always = 1
 
 " to update gitgutter signs faster
