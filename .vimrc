@@ -321,6 +321,14 @@ nmap <C-L> :FufLine<cr>
 "nnoremap <C-@> i
 inoremap <C-@> <Esc>
 
+inoremap " ""<left>
+inoremap ' ''<left>
+inoremap ( ()<left>
+inoremap [ []<left>
+inoremap { {}<left>
+inoremap {<CR> {<CR>}<ESC>O
+inoremap {;<CR> {<CR>};<ESC>O
+
 nnoremap <LocalLeader>a :Ack<CR>
 noremap <LocalLeader>u :w<CR>
 
@@ -368,7 +376,7 @@ set wildmode=list:longest
 
 " Редко когда надо [ без пары =)
 " imap [ []<LEFT>
-" Аналогично и для {
+" Аналогично и для 
 imap {<CR> {<CR>}<Esc>O
 
 " Автозавершение слов по tab =)
